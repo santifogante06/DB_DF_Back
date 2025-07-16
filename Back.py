@@ -38,6 +38,15 @@ def on_message(client, userdata, msg):
     if validate_json(json_document):
         # Insert the data into the MySQL database
         try:
+            check_product_exists = queries["check_product_exists"]
+            cursor.execute(check_product_exists, (json_document["products"]["name"], json_document["products"]["barcode"]))
+            result = cursor.fetchone()
+            if result:
+                product_id = result[0]
+                update_query = queries["stock_update"]
+                cursor.execute(update_query, (json_document["stock"]["quantity"], product_id))
+                db.commit()
+                publish_success(mqttc, "Stock updated successfully.")
             query_for_products = queries["insert_product"]
             cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
             db.commit()
@@ -136,6 +145,7 @@ def validate_json(json_document):
     if not regex_stock_validation(json_document["stock"]):
         return False
     return True
+
 
 def publish_error(client, error_message):
     """Publish an error message to the MQTT broker."""
