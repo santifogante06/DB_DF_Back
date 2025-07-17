@@ -60,6 +60,10 @@ def on_message(client, userdata, msg):
                 cursor.execute(update_time_query, (current_time, stock_id_result))
                 db.commit()
                 publish_success(mqttc, "Time updated successfully.")
+                action = "update"
+                cursor.execute(queries["set_history"], (product_id, action))
+                db.commit()
+                publish_success(mqttc, "History updated successfully.")
                 return
             query_for_products = queries["insert_product"]
             cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
@@ -75,6 +79,10 @@ def on_message(client, userdata, msg):
             stock_id = cursor.lastrowid  # Get the last inserted stock ID
             query_for_time_foreignid = queries["insert_time_foreignid"]
             cursor.execute(query_for_time_foreignid, (stock_id,))
+            db.commit()
+            query_for_history = queries["set_history"]
+            action = "insert"
+            cursor.execute(query_for_history, (product_id, action))
             db.commit()
             publish_success(mqttc, "Data inserted successfully into MySQL database.")
         except mysql.connector.Error as err:
@@ -158,8 +166,8 @@ def validate_json(json_document):
         return False
     if not regex_stock_validation(json_document["stock"]):
         return False
-    return True
 
+    return True
 
 def publish_error(client, error_message):
     """Publish an error message to the MQTT broker."""
