@@ -57,6 +57,9 @@ def commit_for_update(product_id, json_document):
     cursor.execute(get_stock_query, (product_id,))
     current_stock = cursor.fetchone()
     new_quantity = current_stock[0]+ json_document["stock"]["quantity"]
+    if new_quantity < 0:
+        publish_error(mqttc, "Insufficient stock.")
+        return
     update_query = queries["stock_update"]
     cursor.execute(update_query, (new_quantity, product_id))
     db.commit()
@@ -76,6 +79,8 @@ def commit_for_update(product_id, json_document):
 
 def commit_for_insert(json_document):
     """Insert a new product, location, and stock into the MySQL database."""
+    if negative_stock_validation_insert(json_document["stock"]):
+        return
     query_for_products = queries["insert_product"]
     cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
     db.commit()
@@ -163,6 +168,13 @@ def regex_stock_validation(stock):
     if re.match(pattern, str(stock["quantity"])):
         return True
     publish_error(mqttc, "Invalid stock quantity format.")
+    return False
+
+def negative_stock_validation_insert(stock):
+    """Validate that stock quantity is not negative during insert."""
+    if stock["quantity"] < 0:
+        publish_error(mqttc, "Stock quantity cannot be negative during insert.")
+        return True
     return False
 
 def validate_json(json_document):
