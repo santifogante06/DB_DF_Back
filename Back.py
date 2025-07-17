@@ -73,13 +73,16 @@ def commit_for_update(product_id, json_document):
     db.commit()
     publish_success(mqttc, "Time updated successfully.")
     action = "update"
-    cursor.execute(queries["set_history"], (product_id, action))
+    action_function = "add"
+    if json_document["stock"]["quantity"] < 0:
+        action_function = "remove"
+    cursor.execute(queries["set_history"], (product_id, action, action_function))
     db.commit()
     publish_success(mqttc, "History updated successfully.")
 
 def commit_for_insert(json_document):
     """Insert a new product, location, and stock into the MySQL database."""
-    if negative_stock_validation_insert(json_document["stock"]):
+    if  not negative_stock_validation_insert(json_document["stock"]):
         return
     query_for_products = queries["insert_product"]
     cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
@@ -98,7 +101,7 @@ def commit_for_insert(json_document):
     db.commit()
     query_for_history = queries["set_history"]
     action = "insert"
-    cursor.execute(query_for_history, (product_id, action))
+    cursor.execute(query_for_history, (product_id, action, "add"))
     db.commit()
     publish_success(mqttc, "Data inserted successfully into MySQL database.")
 
@@ -126,8 +129,8 @@ def json_validation(json_document):
             return False
     # Additional validations
     try:
-        if not isinstance(json_document["products"]["name"], str):
-            publish_error(mqttc, "name must be a string")
+        if not isinstance(json_document["products"]["name"], str) or json_document["products"]["name"] is None or json_document["products"]["name"].strip() == "":
+            publish_error(mqttc, "name must be a non-empty string")
             return False
         if not isinstance(json_document["products"]["barcode"], int):
             publish_error(mqttc, "barcode must be an integer")
@@ -135,8 +138,8 @@ def json_validation(json_document):
         if not isinstance(json_document["location"]["column"], int):
             publish_error(mqttc, "column must be an integer")
             return False
-        if not isinstance(json_document["location"]["row"], str):
-            publish_error(mqttc, "row must be a string")
+        if not isinstance(json_document["location"]["row"], str) or json_document["location"]["row"] is None or json_document["location"]["row"].strip() == "":
+            publish_error(mqttc, "row must be a non-empty string")
             return False
         if not isinstance(json_document["stock"]["quantity"], int):
             publish_error(mqttc, "quantity must be an integer")
@@ -174,18 +177,18 @@ def negative_stock_validation_insert(stock):
     """Validate that stock quantity is not negative during insert."""
     if stock["quantity"] < 0:
         publish_error(mqttc, "Stock quantity cannot be negative during insert.")
-        return True
-    return False
+        return False
+    return True
 
 def validate_json(json_document):
     """Validate the JSON document structure and content."""
     if not json_validation(json_document):
         return False
-    if not regex_validation(json_document["products"]["barcode"]):
-        return False
-    if not regex_location_validation(json_document["location"]):
-        return False
-    if not regex_stock_validation(json_document["stock"]):
+    if not all([
+        regex_validation(json_document["products"]["barcode"]),
+        regex_location_validation(json_document["location"]),
+        regex_stock_validation(json_document["stock"])
+    ]):
         return False
 
     return True

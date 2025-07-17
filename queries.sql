@@ -30,5 +30,5 @@ UPDATE time_df SET date_time=%s WHERE stock_id=%s;
 SELECT stock_id FROM stock_df WHERE product_id=%s;
 
 -- set_history
-INSERT INTO history_df (product_id, action)
-VALUES (%s, %s);
+INSERT INTO history_df (product_id, action, action_function)
+VALUES (%s, %s, %s);
