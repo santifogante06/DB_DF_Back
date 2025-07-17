@@ -39,54 +39,63 @@ def on_message(client, userdata, msg):
     if validate_json(json_document):
         # Insert the data into the MySQL database
         try:
+            # Check if the product already exists
             check_product_exists = queries["check_product_exists"]
             cursor.execute(check_product_exists, (json_document["products"]["name"], json_document["products"]["barcode"]))
             result = cursor.fetchone()
             if result:
                 product_id = result[0]
-                get_stock_query = queries["get_current_stock"]
-                cursor.execute(get_stock_query, (product_id,))
-                current_stock = cursor.fetchone()
-                new_quantity = current_stock[0]+ json_document["stock"]["quantity"]
-                update_query = queries["stock_update"]
-                cursor.execute(update_query, (new_quantity, product_id))
-                db.commit()
-                publish_success(mqttc, "Stock updated successfully.")
-                get_stock_id_query = queries["get_stock_id"]
-                cursor.execute(get_stock_id_query, (product_id,))
-                stock_id_result = cursor.fetchone()[0]
-                update_time_query = queries["update_time"]
-                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute(update_time_query, (current_time, stock_id_result))
-                db.commit()
-                publish_success(mqttc, "Time updated successfully.")
-                action = "update"
-                cursor.execute(queries["set_history"], (product_id, action))
-                db.commit()
-                publish_success(mqttc, "History updated successfully.")
+                commit_for_update(product_id, json_document)
                 return
-            query_for_products = queries["insert_product"]
-            cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
-            db.commit()
-            product_id = cursor.lastrowid  # Get the last inserted product ID
-            query_for_ubicaciones = queries["insert_locations"]
-            cursor.execute(query_for_ubicaciones, (json_document["location"]["column"], json_document["location"]["row"], product_id))
-            db.commit()
-            ubicaciones_id = cursor.lastrowid  # Get the last inserted ubicaciones ID
-            query_for_stock = queries["insert_stock"]
-            cursor.execute(query_for_stock, (json_document["stock"]["quantity"], product_id, ubicaciones_id))
-            db.commit()
-            stock_id = cursor.lastrowid  # Get the last inserted stock ID
-            query_for_time_foreignid = queries["insert_time_foreignid"]
-            cursor.execute(query_for_time_foreignid, (stock_id,))
-            db.commit()
-            query_for_history = queries["set_history"]
-            action = "insert"
-            cursor.execute(query_for_history, (product_id, action))
-            db.commit()
-            publish_success(mqttc, "Data inserted successfully into MySQL database.")
+            commit_for_insert(json_document)
         except mysql.connector.Error as err:
             publish_error(mqttc, f"Error inserting data into MySQL: {err}")
+
+def commit_for_update(product_id, json_document):
+    """Update the existing product's stock and time in the MySQL database."""
+    get_stock_query = queries["get_current_stock"]
+    cursor.execute(get_stock_query, (product_id,))
+    current_stock = cursor.fetchone()
+    new_quantity = current_stock[0]+ json_document["stock"]["quantity"]
+    update_query = queries["stock_update"]
+    cursor.execute(update_query, (new_quantity, product_id))
+    db.commit()
+    publish_success(mqttc, "Stock updated successfully.")
+    get_stock_id_query = queries["get_stock_id"]
+    cursor.execute(get_stock_id_query, (product_id,))
+    stock_id_result = cursor.fetchone()[0]
+    update_time_query = queries["update_time"]
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute(update_time_query, (current_time, stock_id_result))
+    db.commit()
+    publish_success(mqttc, "Time updated successfully.")
+    action = "update"
+    cursor.execute(queries["set_history"], (product_id, action))
+    db.commit()
+    publish_success(mqttc, "History updated successfully.")
+
+def commit_for_insert(json_document):
+    """Insert a new product, location, and stock into the MySQL database."""
+    query_for_products = queries["insert_product"]
+    cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
+    db.commit()
+    product_id = cursor.lastrowid  # Get the last inserted product ID
+    query_for_ubicaciones = queries["insert_locations"]
+    cursor.execute(query_for_ubicaciones, (json_document["location"]["column"], json_document["location"]["row"], product_id))
+    db.commit()
+    ubicaciones_id = cursor.lastrowid  # Get the last inserted ubicaciones ID
+    query_for_stock = queries["insert_stock"]
+    cursor.execute(query_for_stock, (json_document["stock"]["quantity"], product_id, ubicaciones_id))
+    db.commit()
+    stock_id = cursor.lastrowid  # Get the last inserted stock ID
+    query_for_time_foreignid = queries["insert_time_foreignid"]
+    cursor.execute(query_for_time_foreignid, (stock_id,))
+    db.commit()
+    query_for_history = queries["set_history"]
+    action = "insert"
+    cursor.execute(query_for_history, (product_id, action))
+    db.commit()
+    publish_success(mqttc, "Data inserted successfully into MySQL database.")
 
 def json_validation(json_document):
     """Validate the JSON document structure."""
