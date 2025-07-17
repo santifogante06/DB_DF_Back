@@ -3,6 +3,7 @@ import json
 import mysql.connector
 import re
 from datetime import datetime
+from db_connection import get_db_connection
 
 def load_queries(path):
     """Load SQL queries from a file."""
@@ -211,14 +212,13 @@ mqttc.on_connect = on_connect
 mqttc.on_message = on_message
 
 # Set up the MySQL connection
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="df_estanteria"
-)
-# Create a cursor object to execute SQL queries
-cursor = db.cursor()
+connection = get_db_connection()
+if connection:
+    db = connection
+    # Create a cursor object to execute SQL queries
+    cursor = db.cursor()
+else:
+    raise Exception("Failed to connect to the database.")
 
 mqttc.connect("test.mosquitto.org", 1883, 60)
 
