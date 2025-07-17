@@ -1,5 +1,5 @@
 -- check_product_exists
-SELECT product_id FROM products WHERE name=%s AND barcode=%s;
+SELECT product_id FROM products_df WHERE product_name=%s AND product_barcode=%s;
 
 -- insert_product
 INSERT INTO products_df (product_name, product_barcode)
@@ -18,4 +18,13 @@ INSERT INTO time_df (stock_id)
 VALUES (%s);
 
 -- stock_update
-UPDATE stock_df SET quantity=%s WHERE product_id=%s
+UPDATE stock_df SET stock_quantity=%s WHERE product_id=%s
+
+-- get_current_stock
+SELECT stock_quantity FROM stock_df WHERE product_id=%s;
+
+-- update_time
+UPDATE time_df SET date_time=%s WHERE stock_id=%s;
+
+-- get_stock_id
+SELECT stock_id FROM stock_df WHERE product_id=%s;

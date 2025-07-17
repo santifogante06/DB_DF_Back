@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 import mysql.connector
 import re
+from datetime import datetime
 
 def load_queries(path):
     """Load SQL queries from a file."""
@@ -43,10 +44,23 @@ def on_message(client, userdata, msg):
             result = cursor.fetchone()
             if result:
                 product_id = result[0]
+                get_stock_query = queries["get_current_stock"]
+                cursor.execute(get_stock_query, (product_id,))
+                current_stock = cursor.fetchone()
+                new_quantity = current_stock[0]+ json_document["stock"]["quantity"]
                 update_query = queries["stock_update"]
-                cursor.execute(update_query, (json_document["stock"]["quantity"], product_id))
+                cursor.execute(update_query, (new_quantity, product_id))
                 db.commit()
                 publish_success(mqttc, "Stock updated successfully.")
+                get_stock_id_query = queries["get_stock_id"]
+                cursor.execute(get_stock_id_query, (product_id,))
+                stock_id_result = cursor.fetchone()[0]
+                update_time_query = queries["update_time"]
+                current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cursor.execute(update_time_query, (current_time, stock_id_result))
+                db.commit()
+                publish_success(mqttc, "Time updated successfully.")
+                return
             query_for_products = queries["insert_product"]
             cursor.execute(query_for_products, (json_document["products"]["name"], json_document["products"]["barcode"]))
             db.commit()
@@ -128,7 +142,7 @@ def regex_location_validation(location):
 
 def regex_stock_validation(stock):
     """Validate the stock quantity using a regular expression."""
-    pattern = r"^\d+$"  # Example pattern for a non-negative integer stock quantity
+    pattern = r"^-?\d+$"  # Example pattern for a signed integer (can be negative)
     if re.match(pattern, str(stock["quantity"])):
         return True
     publish_error(mqttc, "Invalid stock quantity format.")
