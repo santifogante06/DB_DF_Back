@@ -4,27 +4,10 @@ import mysql.connector
 import re
 from datetime import datetime
 from db_connection import get_db_connection
-
-def load_queries(path):
-    """Load SQL queries from a file."""
-    queries = {}
-    with open(path, "r") as file:
-        key = ""
-        buffer = ""
-        for line in file:
-            if line.startswith("--"):
-                if key and buffer:
-                    queries[key] = buffer.strip()
-                key = line[2:].strip()
-                buffer = ""
-            else:
-                buffer += line
-        if key and buffer:
-            queries[key] = buffer.strip()
-    return queries
+from backend.utils import load_queries
 
 # Load SQL queries from the file
-queries = load_queries("queries.sql")
+queries = load_queries("backend/queries.sql")
 
 def on_connect(client, userdata, flags, rc):
     """"Callback function for when the client connects to the MQTT broker."""
