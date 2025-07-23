@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import dashboard
+from api.routers import dashboard
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Dashboard API", version="1.0.0")

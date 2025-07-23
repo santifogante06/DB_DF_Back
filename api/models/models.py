@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class ProductStock(BaseModel):
     product_id: int
@@ -6,15 +7,15 @@ class ProductStock(BaseModel):
     stock_quantity: int
 
 class LocationStock(BaseModel):
-    location_id: int
-    location: str
+    ubicaciones_id: int
+    ubicaciones_location: str
     stock_quantity: int
 
 class ProductDetail(BaseModel):
     product_id: int
     product_name: str
     stock_quantity: int
-    location: str
+    ubicaciones_location: str
 
 class LowStockAlert(BaseModel):
     product_id: int
@@ -25,8 +26,8 @@ class LowStockAlert(BaseModel):
 class StockMovement(BaseModel):
     product_id: int
     product_name: str
-    quantity: int
-    location: str
+    stock_quantity: int
+    ubicaciones_location: str
     action: str
-    function: str
-    date_time: str
+    action_function: str
+    action_date_time: datetime
