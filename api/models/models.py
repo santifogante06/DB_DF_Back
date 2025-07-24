@@ -21,7 +21,6 @@ class LowStockAlert(BaseModel):
     product_id: int
     product_name: str
     stock_quantity: int
-    min_required: int # Fixed value
 
 class StockMovement(BaseModel):
     product_id: int
