@@ -6,6 +6,7 @@ from backend.utils.load_queries import load_queries
 from typing import List
 from fastapi import HTTPException, status
 from fastapi import Query
+from fastapi import Path
 from api.models.models import (
     ProductStock,
     LocationStock,
@@ -218,7 +219,7 @@ async def stock_movement(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch movement stock data: {str(e)}")
 
 @router.get("/product-stock-byid/{product_id}", response_model=List[ProductStock])
-async def product_stock_byid(product_id: int, db: MySQLConnection = Depends(get_db_connection)):
+async def product_stock_byid(product_id: int = Path(..., gt=0, description="The ID of the product must be greater than 0"), db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor(dictionary=True)
         cursor.execute(queries["product_stock_byid"], (product_id,))
@@ -233,7 +234,7 @@ async def product_stock_byid(product_id: int, db: MySQLConnection = Depends(get_
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch product stock data: {str(e)}")
 
 @router.get("/location-stock-byid/{ubicaciones_id}", response_model=List[LocationStock])
-async def location_stock_byid(ubicaciones_id: int, db: MySQLConnection = Depends(get_db_connection)):
+async def location_stock_byid(ubicaciones_id: int = Path(..., gt=0, description="The ID of the location must be greater than 0"), db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor(dictionary=True)
         cursor.execute(queries["location_stock_byid"], (ubicaciones_id,))
@@ -248,7 +249,7 @@ async def location_stock_byid(ubicaciones_id: int, db: MySQLConnection = Depends
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch location stock data: {str(e)}")
 
 @router.get("/product-detail-byid/{product_id}", response_model=List[ProductDetail])
-async def product_detail_byid(product_id: int, db: MySQLConnection = Depends(get_db_connection)):
+async def product_detail_byid(product_id: int = Path(..., gt=0, description="The ID of the product must be greater than 0"), db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor(dictionary=True)
         cursor.execute(queries["product_detail_byid"], (product_id,))
@@ -263,7 +264,7 @@ async def product_detail_byid(product_id: int, db: MySQLConnection = Depends(get
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch product detail data: {str(e)}")
 
 @router.get("/low-stock-alert-byid/{product_id}", response_model=List[LowStockAlert])
-async def low_stock_alert_byid(product_id: int, db: MySQLConnection = Depends(get_db_connection)):
+async def low_stock_alert_byid(product_id: int = Path(..., gt=0, description="The ID of the product must be greater than 0"), db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor(dictionary=True)
         cursor.execute(queries["low_stock_alert_byid"], (product_id,))
@@ -278,7 +279,7 @@ async def low_stock_alert_byid(product_id: int, db: MySQLConnection = Depends(ge
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch low stock alert data: {str(e)}")
 
 @router.get("/stock-movement-byid/{product_id}", response_model=List[StockMovement])
-async def stock_movement_byid(product_id: int, db: MySQLConnection = Depends(get_db_connection)):
+async def stock_movement_byid(product_id: int = Path(..., gt=0, description="The ID of the product must be greater than 0"), db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor(dictionary=True)
         cursor.execute(queries["stock_movement_byid"], (product_id,))
