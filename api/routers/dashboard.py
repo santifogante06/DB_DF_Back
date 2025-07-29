@@ -4,6 +4,7 @@ from backend.db_connection import get_db_connection
 from fastapi import Depends
 from backend.utils.load_queries import load_queries
 from typing import List
+from datetime import datetime
 from fastapi import HTTPException, status
 from fastapi import Query
 from fastapi import Path
@@ -13,6 +14,8 @@ from api.models.models import (
     ProductDetail,
     LowStockAlert,
     StockMovement,
+    InsertProduct,
+    updateProduct
 )
 
 router = APIRouter()
@@ -293,3 +296,64 @@ async def stock_movement_byid(product_id: int = Path(..., gt=0, description="The
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch stock movement data: {str(e)}")
 
+@router.post("/insert-product", response_model=InsertProduct)
+async def insert_product(product: InsertProduct, db: MySQLConnection = Depends(get_db_connection)):
+    try:
+        cursor = db.cursor()
+        db.start_transaction()
+        # Insert new product, location, and stock
+        # Insert product data
+        cursor.execute(queries["insert_product"], (product.product.product_name, product.product.product_barcode))
+        product_id = cursor.lastrowid  # Get the last inserted product ID
+        # Insert location data
+        cursor.execute(queries["insert_locations"], (product.location.ubicaciones_column, product.location.ubicaciones_row, product_id))
+        ubicaciones_id = cursor.lastrowid  # Get the last inserted ubicaciones ID
+        # Insert stock data
+        cursor.execute(queries["insert_stock"], (product.stock.stock_quantity, product_id, ubicaciones_id))
+        stock_id = cursor.lastrowid  # Get the last inserted stock ID
+        # Insert time data
+        cursor.execute(queries["insert_time_foreignid"], (stock_id,))
+        # Set history
+        cursor.execute(queries["set_history"], (product_id, "insert", "add"))
+        db.commit()
+        cursor.close()
+        return product
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to insert product data: {str(e)}")
+
+@router.post("/update-product", response_model=List[updateProduct])
+async def insert_product(product: updateProduct, db: MySQLConnection = Depends(get_db_connection)):
+    try:
+        cursor = db.cursor()
+        db.start_transaction()
+        # Check if product exists
+        cursor.execute(queries["check_product_exists"], (product.product_id,))
+        result = cursor.fetchone()
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        # Get stock data
+        cursor.execute(queries["get_current_stock"], (product.product_id,))
+        current_stock = cursor.fetchone()
+        if not current_stock:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current stock not found")
+        new_quantity = current_stock[0] + product.stock.stock_quantity
+        if new_quantity < 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient stock")
+        # Update stock data
+        cursor.execute(queries["stock_update"], (new_quantity, product.product_id))
+        
+        # Set history
+        action_function = "add" if product.stock.stock_quantity >= 0 else "remove"
+        cursor.execute(queries["set_history"], (product.product_id, "update", action_function))
+        
+        db.commit()
+        cursor.close()
+        return [product]
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to update product data: {str(e)}")

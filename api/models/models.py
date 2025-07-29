@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 
 class ProductStock(BaseModel):
@@ -30,3 +30,24 @@ class StockMovement(BaseModel):
     action: str
     action_function: str
     action_date_time: datetime
+
+class ProductData(BaseModel):
+    product_name: str
+    product_barcode: int
+
+class LocationData(BaseModel):
+    ubicaciones_row: str
+    ubicaciones_column: int
+
+class StockData(BaseModel):
+    stock_quantity: int
+
+class InsertProduct(BaseModel):
+    product: ProductData
+    location: LocationData
+    stock: StockData
+
+class updateProduct(BaseModel):
+    product_id: int
+    ubicaciones_id: int
+    stock: StockData
