@@ -306,7 +306,7 @@ async def insert_product(product: InsertProduct, db: MySQLConnection = Depends(g
         cursor.execute(queries["insert_product"], (product.product.product_name, product.product.product_barcode))
         product_id = cursor.lastrowid  # Get the last inserted product ID
         # Insert location data
-        cursor.execute(queries["insert_locations"], (product.location.ubicaciones_column, product.location.ubicaciones_row, product_id))
+        cursor.execute(queries["insert_locations"], (product.location.ubicaciones_column, product.location.ubicaciones_row))
         ubicaciones_id = cursor.lastrowid  # Get the last inserted ubicaciones ID
         # Insert stock data
         cursor.execute(queries["insert_stock"], (product.stock.stock_quantity, product_id, ubicaciones_id))
@@ -324,8 +324,8 @@ async def insert_product(product: InsertProduct, db: MySQLConnection = Depends(g
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to insert product data: {str(e)}")
 
-@router.post("/update-product", response_model=List[updateProduct])
-async def insert_product(product: updateProduct, db: MySQLConnection = Depends(get_db_connection)):
+@router.put("/update-product", response_model=List[updateProduct])
+async def update_product(product: updateProduct, db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor()
         db.start_transaction()

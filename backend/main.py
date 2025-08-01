@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from db_connection import get_db_connection
 from backend.utils import load_queries
-# TODO: AGREGAR FUNCIONES DEL HISTORY EN LA DB
+
 # Load SQL queries from the file
 queries = load_queries("backend/queries.sql")
 
