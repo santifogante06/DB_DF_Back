@@ -26,7 +26,6 @@ class StockMovement(BaseModel):
     product_id: int
     product_name: str
     stock_quantity: int
-    ubicaciones_location: str
     action: str
     action_function: str
     action_date_time: datetime

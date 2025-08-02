@@ -21,10 +21,9 @@ JOIN stock_df s ON p.product_id = s.product_id
 WHERE s.stock_quantity <= 1
 
 -- stock_movement
-SELECT p.product_id, p.product_name, s.stock_quantity AS stock_quantity, l.ubicaciones_location AS ubicaciones_location, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function
+SELECT p.product_id, p.product_name, COALESCE(s.stock_quantity, 0) AS stock_quantity, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function
 FROM products_df p
-JOIN stock_df s ON p.product_id = s.product_id
-JOIN ubicaciones_df l ON s.ubicaciones_id = l.ubicaciones_id
+LEFT JOIN stock_df s ON p.product_id = s.product_id
 JOIN history_df h ON p.product_id = h.product_id
 
 -- product_stock_byid
@@ -53,11 +52,10 @@ JOIN stock_df s ON p.product_id = s.product_id
 WHERE s.stock_quantity <= 1 AND p.product_id = %s
 
 -- stock_movement_byid
-SELECT p.product_id, p.product_name, s.stock_quantity AS stock_quantity, l.ubicaciones_location AS ubicaciones_location, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function
+SELECT p.product_id, p.product_name, COALESCE(s.stock_quantity, 0) AS stock_quantity, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function
 FROM products_df p
-JOIN stock_df s ON p.product_id = s.product_id
-JOIN ubicaciones_df l ON s.ubicaciones_id = l.ubicaciones_id
-JOIN history_df h ON p.product_id = h.product_id
+LEFT JOIN stock_df s ON p.product_id = s.product_id
+LEFT JOIN history_df h ON p.product_id = h.product_id
 WHERE p.product_id = %s
 
 -- insert_product

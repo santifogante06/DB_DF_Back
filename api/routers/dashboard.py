@@ -167,7 +167,6 @@ async def stock_movement(
     name: str | None = Query(default=None, description="Filter by product name"),
     limit: int = Query(default=100, description="Limit the number of results"),
     offset: int | None = Query(default=None, description="Offset for pagination"),
-    location: str | None = Query(default=None, description="Filter by location name"),
     sort_by: str | None = Query(default=None, description="Sort by column"),
     order: str = Query(default="asc", description="Sort order (asc/desc)"),
     action: str | None = Query(default=None, description="Filter by action type (e.g., 'insert', 'update')"),
@@ -183,10 +182,7 @@ async def stock_movement(
         if name:
             conditions.append("product_name LIKE %s")
             parameters.append(f"%{name}%")
-        if location:
-            conditions.append("ubicaciones_location LIKE %s")
-            parameters.append(f"%{location}%")
-        allowed_sort_columns = ["product_name", "stock_quantity", "ubicaciones_location"]
+        allowed_sort_columns = ["product_name", "stock_quantity", "action", "action_function", "action_date_time"]
         if sort_by in allowed_sort_columns:
             base_query += f" ORDER BY {sort_by} {order.upper() if order in ['asc', 'desc'] else 'ASC'}"
         if action in ["insert", "update"]:
