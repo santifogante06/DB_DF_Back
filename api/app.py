@@ -17,3 +17,8 @@ app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Dashboard API. Use /dashboard for dashboard operations."}
+
+'''
+cd /Volumes/Untitled/DF/Backnd
+uvicorn api.app:app --reload
+'''

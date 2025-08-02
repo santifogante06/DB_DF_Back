@@ -94,3 +94,18 @@ UPDATE time_df SET date_time=%s WHERE stock_id=%s;
 
 -- get_stock_id
 SELECT stock_id FROM stock_df WHERE product_id=%s;
+
+-- delete_stock
+DELETE FROM stock_df WHERE product_id = %s;
+
+-- get_ubicaciones_id
+SELECT ubicaciones_id FROM stock_df WHERE product_id = %s;
+
+-- delete_ubicaciones
+DELETE FROM ubicaciones_df WHERE ubicaciones_id = %s;
+
+-- delete_time
+DELETE FROM time_df WHERE stock_id = %s;
+
+
+

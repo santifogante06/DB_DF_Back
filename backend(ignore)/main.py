@@ -3,8 +3,8 @@ import json
 import mysql.connector
 import re
 from datetime import datetime
-from db_connection import get_db_connection
-from backend.utils import load_queries
+from api.utils.db_connection import get_db_connection
+from api.utils import load_queries
 
 # Load SQL queries from the file
 queries = load_queries("backend/queries.sql")

@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from mysql.connector import MySQLConnection
-from backend.db_connection import get_db_connection
+from api.utils.db_connection import get_db_connection
 from fastapi import Depends
-from backend.utils.load_queries import load_queries
+from api.utils.load_queries import load_queries
 from typing import List
 from datetime import datetime
 from fastapi import HTTPException, status
@@ -357,3 +357,37 @@ async def update_product(product: updateProduct, db: MySQLConnection = Depends(g
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to update product data: {str(e)}")
+    
+@router.delete("/delete-product/{product_id}")
+async def delete_product(product_id: int = Path(..., gt=0, description="The ID of the product must be greater than 0"), db: MySQLConnection = Depends(get_db_connection)):
+    try:
+        cursor = db.cursor()
+        db.start_transaction()
+        # Check if product exists
+        cursor.execute(queries["check_product_exists"], (product_id,))
+        result = cursor.fetchone()
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        # Delete stock data
+        cursor.execute(queries["get_stock_id"], (product_id,))
+        stock_id = cursor.fetchone()
+        if stock_id:
+            cursor.execute(queries["delete_time"], (stock_id[0],))
+        # Delete stock data
+        cursor.execute(queries["get_ubicaciones_id"], (product_id,))
+        ubicaciones_id = cursor.fetchone()
+        cursor.execute(queries["delete_stock"], (product_id,))
+        # Delete location data
+        if ubicaciones_id:
+            cursor.execute(queries["delete_ubicaciones"], (ubicaciones_id[0],))
+        # Set history
+        cursor.execute(queries["set_history"], (product_id, "delete", "remove"))
+
+        db.commit()
+        cursor.close()
+        return {"message": "Product deleted successfully"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to delete product data: {str(e)}")
