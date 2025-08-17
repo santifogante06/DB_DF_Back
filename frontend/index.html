@@ -15,18 +15,81 @@
     </header>
     <main>
         <div class="button-group">
-            <button><span class="button-content"> + Agregar</span></button>
-            <button><span class="button-content"> - Eliminar</span></button>
+            <button id="btn-add"><span class="button-content"> + Agregar</span></button>
+            <button id="btn-remove"><span class="button-content"> - Eliminar</span></button>
         </div>
         <div class="item-list">
             <h2>Lista de Ingresos</h2>
-            <ul class="stock-listbox">
-                <li><span class="stock-item-name"></span>Elemento 1</li>
-                <li><span class="stock-item-name"></span>Elemento 2</li>
-                <li><span class="stock-item-name"></span>Elemento 3</li>
+            <ul class="stock-listbox" id="stock-listbox">
+
             </ul>
         </div>
     </main>
+    <dialog id="form-barcode">
+        <form method="dialog" id="form-barcode">
+            <label for="barcode">Barcode:</label>
+            <input type="text" id="barcode" name="barcode" required />
+            <button type="submit">Enviar</button>
+            <button class="close-icon">&times;</button>
+        </form>
+    </dialog>
+    <dialog id="form-barcode-remove">
+        <form method="dialog" id="form-barcode-remove">
+            <label for="barcode">Barcode:</label>
+            <input type="text" id="barcode-remove" name="barcode" required />
+            <button type="submit">Enviar</button>
+            <button class="close-icon">&times;</button>
+        </form>
+    </dialog>
+    <dialog class="custom-dialog" id="dialog-full">
+        <form method="dialog" id="form-full">
+            <!-- Campo oculto para el barcode reutilizado -->
+            <input type="hidden" id="form-stock-barcode" name="product[product_barcode]">
+
+            <label for="product_name">Nombre del producto:</label>
+            <input type="text" id="product_name" name="product[product_name]" required>
+
+            <label for="ubicaciones_row">Fila (ubicación):</label>
+            <input type="text" id="ubicaciones_row" name="location[ubicaciones_row]" maxlength="1" required>
+
+            <label for="ubicaciones_column">Columna (ubicación):</label>
+            <input type="number" id="ubicaciones_column" name="location[ubicaciones_column]" min="1" required>
+
+            <label for="stock_quantity">Stock inicial:</label>
+            <input type="number" id="stock_quantity" name="stock[stock_quantity]" min="1" required>
+
+            <button type="submit">Guardar producto</button>
+            <button class="close-icon">&times;</button>
+        </form>
+    </dialog>
+    <dialog class="custom-dialog" id="dialog-update">
+        <form method="dialog" class="dialog-form">
+            <h2>Actualizar stock</h2>
+            <label>Stock a agregar:
+                <input type="number" name="nuevoStock" min="1" required>
+            </label>
+            <menu>
+                <button value="cancel" id="cancel-button">Cancelar</button>
+                <button value="confirm" id="update-button">Actualizar</button>
+            </menu>
+        </form>
+    </dialog>
+    <dialog class="custom-dialog" id="dialog-update-remove">
+        <form method="dialog" class="dialog-form">
+            <h2>Actualizar stock</h2>
+            <label>Stock a eliminar:
+                <input type="number" name="nuevoStock" max="-1" required>
+            </label>
+            <menu>
+                <button value="cancel" id="cancel-button-remove">Cancelar</button>
+                <button value="confirm" id="update-button-remove">Actualizar</button>
+            </menu>
+        </form>
+    </dialog>
+    <dialog id="dialog-not-found">
+        <p>El producto no existe</p>
+        <button class="close-icon">&times;</button>
+    </dialog>
     <script src="script.js"></script>
 </body>
 

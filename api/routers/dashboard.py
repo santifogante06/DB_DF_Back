@@ -292,11 +292,26 @@ async def stock_movement_byid(product_id: int = Path(..., gt=0, description="The
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch stock movement data: {str(e)}")
 
+@router.get("/fetch-barcode/{barcode}")
+async def fetch_barcode(barcode: str = Path(..., description="The barcode of the product"), db: MySQLConnection = Depends(get_db_connection)):
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute(queries["fetch_barcode"], (barcode,))
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error trying to fetch product data: {str(e)}")
+
 @router.post("/insert-product", response_model=InsertProduct)
 async def insert_product(product: InsertProduct, db: MySQLConnection = Depends(get_db_connection)):
     try:
         cursor = db.cursor()
         db.start_transaction()
+
+        cursor.execute(queries["fetch_barcode"], (product.product.product_barcode,))
+        if cursor.fetchone():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Product with this barcode already exists")
         # Insert new product, location, and stock
         # Insert product data
         cursor.execute(queries["insert_product"], (product.product.product_name, product.product.product_barcode))
@@ -310,7 +325,7 @@ async def insert_product(product: InsertProduct, db: MySQLConnection = Depends(g
         # Insert time data
         cursor.execute(queries["insert_time_foreignid"], (stock_id,))
         # Set history
-        cursor.execute(queries["set_history"], (product_id, "insert", "add"))
+        cursor.execute(queries["set_history"], (product_id, "insert", "add", product.stock.stock_quantity))
         db.commit()
         cursor.close()
         return product
@@ -326,25 +341,30 @@ async def update_product(product: updateProduct, db: MySQLConnection = Depends(g
         cursor = db.cursor()
         db.start_transaction()
         # Check if product exists
-        cursor.execute(queries["check_product_exists"], (product.product_id,))
+        cursor.execute(queries["fetch_barcode"], (product.product_barcode,))
         result = cursor.fetchone()
         if not result:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
         # Get stock data
-        cursor.execute(queries["get_current_stock"], (product.product_id,))
+        #get product_id
+        cursor.execute(queries["get_product_id"], (product.product_barcode,))
+        product_id = cursor.fetchone()
+        if not product_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        cursor.execute(queries["get_current_stock"], (product_id[0],))
         current_stock = cursor.fetchone()
         if not current_stock:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Current stock not found")
-        new_quantity = current_stock[0] + product.stock.stock_quantity
+        new_quantity = current_stock[0] + product.stock_moved
         if new_quantity < 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient stock")
         # Update stock data
-        cursor.execute(queries["stock_update"], (new_quantity, product.product_id))
+        cursor.execute(queries["stock_update"], (new_quantity, product_id[0]))
         
         # Set history
-        action_function = "add" if product.stock.stock_quantity >= 0 else "remove"
-        cursor.execute(queries["set_history"], (product.product_id, "update", action_function))
-        
+        action_function = "add" if product.stock_moved >= 0 else "remove"
+        cursor.execute(queries["set_history"], (product_id[0], "update", action_function, product.stock_moved))
+
         db.commit()
         cursor.close()
         return [product]

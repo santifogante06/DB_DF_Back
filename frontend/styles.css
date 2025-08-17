@@ -93,30 +93,171 @@ span {
 }
 
 .stock-listbox {
-  width: 350px;
-  padding: 0;
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  color: #fff;
-  list-style: none;
+    width: 350px;
+    padding: 0;
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+    list-style: none;
 }
 
 .stock-listbox li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .stock-listbox li:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 h2 {
     color: #fff;
     margin-bottom: 20px;
     font-weight: bold;
-    
+
 }
 
+dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    border-radius: 12px;
+    padding: 20px 24px;
+    background-color: #272727;
+    color: #fff;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    z-index: 1000;
+}
+
+dialog form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+dialog label {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+dialog input[type="text"] {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #555;
+    background-color: #1F1F1F;
+    color: #fff;
+    outline: none;
+}
+
+dialog input[type="text"]:focus {
+    border-color: #00bfff;
+}
+
+dialog button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 12px;
+    background: #00bfff34;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.4s;
+    font-weight: bold;
+}
+
+dialog button:hover {
+    background: linear-gradient(82.3deg, rgba(0, 255, 255, 1) 10.8%, rgba(0, 200, 255, 1) 94.3%);
+    color: #fff;
+}
+
+.custom-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    border-radius: 12px;
+    padding: 20px 24px;
+    background-color: #272727;
+    color: #fff;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    z-index: 1000;
+}
+
+.custom-dialog form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.custom-dialog label {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.custom-dialog input[type="text"],
+.custom-dialog input[type="number"] {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #555;
+    background-color: #1F1F1F;
+    color: #fff;
+    outline: none;
+}
+
+.custom-dialog input[type="text"]:focus,
+.custom-dialog input[type="number"]:focus {
+    border-color: #00bfff;
+}
+
+.custom-dialog button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 12px;
+    background: #00bfff34;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.4s;
+    font-weight: bold;
+}
+
+.custom-dialog button:hover {
+    background: linear-gradient(82.3deg,
+            rgba(0, 255, 255, 1) 10.8%,
+            rgba(0, 200, 255, 1) 94.3%);
+    color: #fff;
+}
+
+#dialog-not-found {
+    text-align: center;
+    align-content: center;
+    vertical-align: middle;
+    font-size: 1.2em;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
+}
+
+.close-icon {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #555;
+}
+
+.close-icon:hover {
+    color: #000;
+}

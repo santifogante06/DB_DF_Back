@@ -21,7 +21,7 @@ JOIN stock_df s ON p.product_id = s.product_id
 WHERE s.stock_quantity <= 1
 
 -- stock_movement
-SELECT p.product_id, p.product_name, COALESCE(s.stock_quantity, 0) AS stock_quantity, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function
+SELECT p.product_id, p.product_name, COALESCE(s.stock_quantity, 0) AS stock_quantity, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function, h.stock_moved AS stock_moved
 FROM products_df p
 LEFT JOIN stock_df s ON p.product_id = s.product_id
 JOIN history_df h ON p.product_id = h.product_id
@@ -52,7 +52,7 @@ JOIN stock_df s ON p.product_id = s.product_id
 WHERE s.stock_quantity <= 1 AND p.product_id = %s
 
 -- stock_movement_byid
-SELECT p.product_id, p.product_name, COALESCE(s.stock_quantity, 0) AS stock_quantity, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function
+SELECT p.product_id, p.product_name, COALESCE(s.stock_quantity, 0) AS stock_quantity, h.action AS action, h.action_date_time AS action_date_time, h.action_function AS action_function, h.stock_moved AS stock_moved
 FROM products_df p
 LEFT JOIN stock_df s ON p.product_id = s.product_id
 LEFT JOIN history_df h ON p.product_id = h.product_id
@@ -75,8 +75,8 @@ INSERT INTO time_df (stock_id)
 VALUES (%s);
 
 -- set_history
-INSERT INTO history_df (product_id, action, action_function)
-VALUES (%s, %s, %s);
+INSERT INTO history_df (product_id, action, action_function, stock_moved)
+VALUES (%s, %s, %s, %s);
 
 -- check_product_exists
 SELECT product_id FROM products_df WHERE product_id = %s;
@@ -105,5 +105,8 @@ DELETE FROM ubicaciones_df WHERE ubicaciones_id = %s;
 -- delete_time
 DELETE FROM time_df WHERE stock_id = %s;
 
+-- fetch_barcode
+SELECT 1 FROM products_df WHERE product_barcode = %s;
 
-
+-- get_product_id
+SELECT product_id FROM products_df WHERE product_barcode = %s;

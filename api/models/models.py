@@ -29,6 +29,7 @@ class StockMovement(BaseModel):
     action: str
     action_function: str
     action_date_time: datetime
+    stock_moved: int
 
 class ProductData(BaseModel):
     product_name: str
@@ -47,6 +48,5 @@ class InsertProduct(BaseModel):
     stock: StockData
 
 class updateProduct(BaseModel):
-    product_id: int
-    ubicaciones_id: int
-    stock: StockData
+    product_barcode: int
+    stock_moved: int
