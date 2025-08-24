@@ -11,7 +11,7 @@
 
 <body>
     <header>
-        <h1>Darkflow DFE Estanteria</h1>
+        <h1><img src="img/CV_DARKFLOW-16.png" alt="Darkflow DFE Estanteria"></h1>
     </header>
     <main>
         <div class="button-group">
@@ -30,7 +30,7 @@
             <label for="barcode">Barcode:</label>
             <input type="text" id="barcode" name="barcode" required />
             <button type="submit">Enviar</button>
-            <button class="close-icon">&times;</button>
+            <button class="close-icon" type="button">&times;</button>
         </form>
     </dialog>
     <dialog id="form-barcode-remove">
@@ -38,7 +38,7 @@
             <label for="barcode">Barcode:</label>
             <input type="text" id="barcode-remove" name="barcode" required />
             <button type="submit">Enviar</button>
-            <button class="close-icon">&times;</button>
+            <button class="close-icon" type="button">&times;</button>
         </form>
     </dialog>
     <dialog class="custom-dialog" id="dialog-full">
@@ -58,31 +58,31 @@
             <label for="stock_quantity">Stock inicial:</label>
             <input type="number" id="stock_quantity" name="stock[stock_quantity]" min="1" required>
 
-            <button type="submit">Guardar producto</button>
-            <button class="close-icon">&times;</button>
+            <button type="submit" id="save-button">Guardar producto</button>
+            <button class="close-icon" type="button">&times;</button>
         </form>
     </dialog>
     <dialog class="custom-dialog" id="dialog-update">
-        <form method="dialog" class="dialog-form">
+        <form method="dialog" class="dialog-form" id="form-update-add">
             <h2>Actualizar stock</h2>
             <label>Stock a agregar:
-                <input type="number" name="nuevoStock" min="1" required>
+                <input type="number" id="stock_moved_add" name="nuevoStock" min="1" required>
             </label>
             <menu>
-                <button value="cancel" id="cancel-button">Cancelar</button>
-                <button value="confirm" id="update-button">Actualizar</button>
+                <button value="cancel" id="cancel-button" type="button">Cancelar</button>
+                <button value="confirm" id="update-button" type="submit">Actualizar</button>
             </menu>
         </form>
     </dialog>
     <dialog class="custom-dialog" id="dialog-update-remove">
-        <form method="dialog" class="dialog-form">
+        <form method="dialog" class="dialog-form" id="form-update-remove">
             <h2>Actualizar stock</h2>
             <label>Stock a eliminar:
-                <input type="number" name="nuevoStock" max="-1" required>
+                <input type="number" id="stock_moved_remove" name="nuevoStock" min="1" required>
             </label>
             <menu>
-                <button value="cancel" id="cancel-button-remove">Cancelar</button>
-                <button value="confirm" id="update-button-remove">Actualizar</button>
+                <button value="cancel" id="cancel-button-remove" type="button">Cancelar</button>
+                <button value="confirm" id="update-button-remove" type="submit">Actualizar</button>
             </menu>
         </form>
     </dialog>

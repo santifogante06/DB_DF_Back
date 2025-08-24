@@ -6,10 +6,10 @@ const fetchLastProducts = async () => {
         data.forEach(element => {
             action = element.action_function;
             if (action === 'add') {
-                document.getElementById('stock-listbox').innerHTML += `<li>+ ${element.product_name} | Stock moved: ${element.stock_moved}</li>`;
+                document.getElementById('stock-listbox').innerHTML += `<li>${element.product_name} | Stock moved: ${element.stock_moved}</li>`;
             }
             else if (action === 'remove') {
-                document.getElementById('stock-listbox').innerHTML += `<li>- ${element.product_name} | Stock moved: ${element.stock_moved}</li>`;
+                document.getElementById('stock-listbox').innerHTML += `<li>${element.product_name} | Stock moved: ${element.stock_moved}</li>`;
             }
         });
         return data;
@@ -30,6 +30,9 @@ const cancelButton = document.getElementById('cancel-button');
 const updateButton = document.getElementById('update-button');
 const cancelButtonRemove = document.getElementById('cancel-button-remove');
 const updateButtonRemove = document.getElementById('update-button-remove');
+const dialogFull = document.getElementById('dialog-full');
+const dialogUpdate = document.getElementById('dialog-update');
+const dialogUpdateRemove = document.getElementById('dialog-update-remove');
 
 btnAdd.addEventListener('click', async () => {
     formBarcode.showModal();
@@ -60,17 +63,17 @@ formBarcode.addEventListener('submit', async (event) => {
             formBarcode.close();
             if (Array.isArray(data) && data.length === 0) {
                 document.getElementById('form-stock-barcode').value = barcode;
-                document.getElementById('dialog-full').showModal();
+                dialogFull.showModal();
                 Array.from(closeIcons).forEach(icon => {
                     icon.addEventListener('click', () => {
-                        document.getElementById('dialog-full').close();
+                        dialogFull.close();
                     });
                 });
             } else if (data && data.length === 1) {
                 document.getElementById('form-stock-barcode').value = barcode;
-                document.getElementById('dialog-update').showModal();
+                dialogUpdate.showModal();
                 cancelButton.addEventListener('click', () => {
-                    document.getElementById('dialog-update').close();
+                    dialogUpdate.close();
                 });
             }
         } catch (error) {
@@ -109,3 +112,104 @@ formBarcodeRemove.addEventListener('submit', async (event) => {
     }
 });
 
+document.getElementById('form-full').onsubmit = async (event) => {
+    event.preventDefault();
+    const body = {
+        product: {
+            product_name: document.getElementById("product_name").value,
+            product_barcode: Number(document.getElementById("form-stock-barcode").value)
+        },
+        location: {
+            ubicaciones_row: document.getElementById("ubicaciones_row").value,
+            ubicaciones_column: Number(document.getElementById("ubicaciones_column").value)
+        },
+        stock: {
+            stock_quantity: Number(document.getElementById("stock_quantity").value)
+        }
+    };
+    console.log(body);
+    try {
+        const response = await fetch('http://127.0.0.1:8000/dashboard/insert-product', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            alert('❌ Error adding product:', error);
+        } else {
+            const result = await response.json();
+            alert('✅ Product added:', result);
+            dialogFull.close();
+        }
+        document.getElementById('stock-listbox').innerHTML = "";
+        await fetchLastProducts();
+    } catch (error) {
+        console.error('Error adding product:', error);
+    }
+};
+
+document.getElementById("form-update-add").onsubmit = async (event) => {
+    event.preventDefault();
+    const body = {
+            product_barcode: Number(document.getElementById("form-stock-barcode").value),
+            stock_moved: Number(document.getElementById("stock_moved_add").value)
+    };
+    console.log(body);
+    try {
+        const response = await fetch('http://127.0.0.1:8000/dashboard/update-product', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            alert('❌ Error updating stock:', error);
+        } else {
+            const result = await response.json();
+            alert('✅ Stock updated:', result);
+            dialogUpdate.close();
+        }
+        document.getElementById('stock-listbox').innerHTML = "";
+        await fetchLastProducts();
+    } catch (error) {
+        console.error('Error adding product:', error);
+    }
+};
+
+document.getElementById("form-update-remove").onsubmit = async (event) => {
+    event.preventDefault();
+    const stockInput = Number(document.getElementById("stock_moved_remove").value);
+    const stockMoved = -Math.abs(stockInput);
+
+    const body = {
+        product_barcode: Number(document.getElementById("form-stock-barcode").value),
+        stock_moved: stockMoved
+    };
+    console.log(body);
+    try {
+        const response = await fetch('http://127.0.0.1:8000/dashboard/update-product', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            alert('❌ Error updating stock:', error);
+        } else {
+            const result = await response.json();
+            alert('✅ Stock updated:', result);
+            dialogUpdateRemove.close();
+        }
+        document.getElementById('stock-listbox').innerHTML = "";
+        await fetchLastProducts();
+    } catch (error) {
+        console.error('Error adding product:', error);
+    }
+};
