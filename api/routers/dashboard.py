@@ -308,10 +308,13 @@ async def insert_product(product: InsertProduct, db: MySQLConnection = Depends(g
     try:
         cursor = db.cursor()
         db.start_transaction()
-
+        # Validations
         cursor.execute(queries["fetch_barcode"], (product.product.product_barcode,))
         if cursor.fetchone():
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Product with this barcode already exists")
+        cursor.execute(queries["fetch_location"], (product.location.ubicaciones_row, product.location.ubicaciones_column))
+        if cursor.fetchone():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Location with this row and column already exists")
         # Insert new product, location, and stock
         # Insert product data
         cursor.execute(queries["insert_product"], (product.product.product_name, product.product.product_barcode))

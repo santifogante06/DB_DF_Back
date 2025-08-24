@@ -120,7 +120,7 @@ document.getElementById('form-full').onsubmit = async (event) => {
             product_barcode: Number(document.getElementById("form-stock-barcode").value)
         },
         location: {
-            ubicaciones_row: document.getElementById("ubicaciones_row").value,
+            ubicaciones_row: document.getElementById("ubicaciones_row").value.toUpperCase(),
             ubicaciones_column: Number(document.getElementById("ubicaciones_column").value)
         },
         stock: {

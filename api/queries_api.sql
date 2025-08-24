@@ -110,3 +110,6 @@ SELECT 1 FROM products_df WHERE product_barcode = %s;
 
 -- get_product_id
 SELECT product_id FROM products_df WHERE product_barcode = %s;
+
+--fetch_location
+SELECT 1 FROM ubicaciones_df WHERE ubicaciones_row = %s AND ubicaciones_column = %s;
